@@ -33,11 +33,13 @@ class jParser(object):
                 # Get command
                 command = operation["command"]
                 # Solve command
+                # Command common
                 if command == "Common":
                     try:
                         output += operation.get("detail")
                     except:
                         pass
+                # Command default
                 elif command == "Error":
                     pass
             elif isCode:
