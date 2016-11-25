@@ -1,6 +1,7 @@
-import parser
+#coding=utf-8
+import jParser
 
-class juiceTpl(text):
+class juiceTpl(object):
     items = {}
     def __init__(self, text):
         self.text = text
@@ -18,4 +19,5 @@ class juiceTpl(text):
         del self.items[key]
 
     def parse(self):
-        return parser.parse(self.text, self.values)
+        tpl = jParser.jParser(self.text, self.items)
+        return tpl.parse()
