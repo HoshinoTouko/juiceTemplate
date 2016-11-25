@@ -22,17 +22,22 @@ class jParser(object):
             elif tempText[pointer] == "{" and tempText[pointer+1] == "{":
                 pointer += 1
                 isCode = True
+                code = ""
             # Code end
             elif isCode and tempText[pointer] == "}" and tempText[pointer+1] == "}":
                 pointer += 1
                 isCode = False
                 # Parse code (return operations)
+                operation = []
                 operation = self.codeParser(code)
                 # Get command
                 command = operation["command"]
                 # Solve command
                 if command == "Common":
-                    output += operation["detail"]
+                    try:
+                        output += operation.get("detail")
+                    except:
+                        pass
                 elif command == "Error":
                     pass
             elif isCode:
@@ -54,19 +59,25 @@ class jParser(object):
         # Case if
         elif data[0] == "if":
             pass
-        # Case common ( All data are printed as value )
+        # Case common ( All data are printed as value ).
         elif data[0][0] == "$":
-            # Check if each data is legal
+            # Check if each data is legal.
             for d in data:
                 if d[0] != "$":
-                    # If is illegal, return ERROR
+                    # If is illegal, return ERROR.
                     result["command"] = "Error"
                     return result
             result["command"] = "Common"
+            # Reset or announce detail
             detail = []
+            # Get values
             for d in data:
                 detail.append(self.items.get(d.replace("$", "")))
-            result["detail"] = " ".join(detail)
+            try:
+                result["detail"] = " ".join(detail)
+            # If the list have only one item, join will return an error. 
+            except:
+                result["detail"] = detail[0]
             return result
         # Case default
         else:
