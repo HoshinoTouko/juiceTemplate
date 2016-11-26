@@ -56,7 +56,7 @@ class jParser(object):
                     codeBlock = text[startPointer+1:forPointer]
                     start = operation["start"]
 
-                    while start < operation["end"]:
+                    while start <= operation["end"]:
                         temp = jParser(codeBlock, self.items)
                         output += temp.parse()
                         start += operation["step"]
