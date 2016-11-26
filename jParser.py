@@ -6,44 +6,70 @@ class jParser(object):
     
     def parse(self):
         # Get text
-        tempText = self.text
+        text = self.text
         # Initialize values
         isCode = False
         code = ""
         output = ""
         pointer = 0
-        length = len(tempText)
-        tempText += " "# To avoid data overflow.
+        length = len(text)
+        text += " "# To avoid data overflow.
         while True:
             # Common text
-            if not isCode and tempText[pointer] != "{" and tempText[pointer+1] != "{" :
-                output += tempText[pointer]
+            if not isCode and text[pointer] != "{" and text[pointer+1] != "{" :
+                output += text[pointer]
             # Code begin
-            elif tempText[pointer] == "{" and tempText[pointer+1] == "{":
+            elif text[pointer] == "{" and text[pointer+1] == "{":
                 pointer += 1
                 isCode = True
                 code = ""
             # Code end
-            elif isCode and tempText[pointer] == "}" and tempText[pointer+1] == "}":
+            elif isCode and text[pointer] == "}" and text[pointer+1] == "}":
                 pointer += 1
                 isCode = False
                 # Parse code (return operations)
-                operation = []
+                operation = {}
                 operation = self.codeParser(code)
                 # Get command
-                command = operation["command"]
+                command = operation.get("command")
                 # Solve command
                 # Command common
-                if command == "Common":
+                if command == "common":
                     try:
                         output += operation.get("detail")
                     except:
                         pass
+
+                # Command for
+                elif command == "for":
+                    forLayer = 1
+                    startPointer = pointer
+                    forPointer = pointer
+                    while forLayer:
+                        if text[forPointer:forPointer+6] == "{{ for":
+                            forLayer += 1
+                        elif text[forPointer:forPointer+13] == "{{ end for }}":
+                            forLayer -= 1
+                        if forPointer >= length:
+                            break
+                        forPointer += 1
+                    codeBlock = text[startPointer+1:forPointer]
+                    start = operation["start"]
+
+                    while start < operation["end"]:
+                        temp = jParser(codeBlock, self.items)
+                        output += temp.parse()
+                        start += operation["step"]
+                    
+                    pointer = forPointer +12
+                    
+
                 # Command default
-                elif command == "Error":
+                elif command == "error":
                     pass
+                # Command end
             elif isCode:
-                code += tempText[pointer]
+                code += text[pointer]
         
             pointer += 1
             if pointer == length:
@@ -55,21 +81,45 @@ class jParser(object):
         result = {}
         # Split source data
         data = code.split()
+
         # Case for
         if data[0] == "for" and data[2] == "to":
-            pass
+            result["command"] = "for"
+            # Get start
+            if data[1][0] == "$":
+                result["start"] = float(self.items.get(data[1].replace("$", "")))
+            else:
+                result["start"] = float(data[1])
+            # Get end
+            if data[3][0] == "$":
+                result["end"] = self.items.get(data[3].replace("$", ""))
+            else:
+                result["end"] = float(data[3])
+            # Get step
+            try:
+                if data[5][0] == "$":
+                    result["step"] = float(self.items.get(data[5].replace("$", "")))
+                else:
+                    result["step"] = float(data[5])
+            except:
+                result["step"] = 1
+            return result
+
+            
+
         # Case if
         elif data[0] == "if":
             pass
+
         # Case common ( All data are printed as value ).
         elif data[0][0] == "$":
             # Check if each data is legal.
             for d in data:
                 if d[0] != "$":
                     # If is illegal, return ERROR.
-                    result["command"] = "Error"
+                    result["command"] = "error"
                     return result
-            result["command"] = "Common"
+            result["command"] = "common"
             # Reset or announce detail
             detail = []
             # Get values
@@ -81,7 +131,8 @@ class jParser(object):
             except:
                 result["detail"] = detail[0]
             return result
+
         # Case default
         else:
-            result["command"] = "Error"
+            result["command"] = "error"
             return result
