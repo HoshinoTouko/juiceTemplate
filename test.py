@@ -4,7 +4,9 @@ testText = """
 For test
 {{ for 1 to $i }}
 test\n
+    {{ for 1 to 2 }}
 {{ $test1 }}
+    {{ end for }}
 {{ end for }}
 
 Common test\n
@@ -19,7 +21,7 @@ test.addItem("test2", "TTT2")
 dic = {
     "test3": "TEST333",
     "single": "SINGLE DOG",
-    "i": 9
+    "i": 5
 }
 test.addItems(dic)
 print test.parse()
