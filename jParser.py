@@ -42,9 +42,13 @@ class jParser(object):
 
                 # Command for
                 elif command == "for":
+                    # Dim for layer
                     forLayer = 1
+                    # Dim the offset where the loop block start
                     startPointer = pointer
+                    # Dim a pointer to loop
                     forPointer = pointer
+                    # Find the complete loop block
                     while forLayer:
                         if text[forPointer:forPointer+6] == "{{ for":
                             forLayer += 1
@@ -53,16 +57,19 @@ class jParser(object):
                         if forPointer >= length:
                             break
                         forPointer += 1
+                    # Get code block content 
                     codeBlock = text[startPointer+1:forPointer]
-                    start = operation["start"]
 
+                    # Begin loop 
+                    start = operation["start"]
                     while start <= operation["end"]:
+                        # Recursion
                         temp = jParser(codeBlock, self.items)
                         output += temp.parse()
                         start += operation["step"]
-                    
-                    pointer = forPointer +12
-                    
+
+                    # Adjust global offset
+                    pointer = forPointer + 12
 
                 # Command default
                 elif command == "error":
