@@ -2,11 +2,9 @@
 import main
 testText = """
 For test
-{{ for 1 to $i }}
+{{ for 1 to $i step 3 }}
 test\n
-    {{ for 1 to 2 }}
-{{ $test1 }}
-    {{ end for }}
+{{ for 1 to 2 }}{{ $test1 }}{{ end for }}
 {{ end for }}
 
 Common test\n
