@@ -11,7 +11,7 @@
 
 ## For
 
-{{ for $i to $name }}
+{{ for $i to $name step 1 }}   (step default 1)
 {{ do something }}
 {{ end for }}
 
