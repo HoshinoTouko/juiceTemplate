@@ -1,6 +1,18 @@
 #coding=utf-8
 import main
 testText = """
+{{ if 1 >= 1 }}
+YES 
+    {{ if $i > 1 }}
+        But YES
+    {{ end if }}
+            {{ if 1 > 1 }}
+            NO
+            {{ end if }}
+{{ end if }}
+
+
+=============================================================
 For test
 {{ for 1 to $i step 3 }}
 test\n
