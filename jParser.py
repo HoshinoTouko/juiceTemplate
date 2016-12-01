@@ -36,7 +36,7 @@ class jParser(object):
                 # Command common
                 if command == "common":
                     try:
-                        output += operation.get("detail")
+                        output += str(operation.get("detail"))
                     except:
                         pass
 
@@ -64,12 +64,61 @@ class jParser(object):
                     start = operation["start"]
                     while start <= operation["end"]:
                         # Recursion
-                        temp = jParser(codeBlock, self.items)
+                        temp = jParser(codeBlock + " ", self.items)
                         output += temp.parse()
                         start += operation["step"]
 
                     # Adjust global offset
                     pointer = forPointer + 12
+
+                elif command == "if":
+                    # Dim if layer
+                    ifLayer = 1
+                    # Dim the offset where the loop block start
+                    startPointer = pointer
+                    # Dim a pointer to loop
+                    forPointer = pointer
+                    # Find the complete loop block
+                    while ifLayer:
+                        if text[forPointer:forPointer+5] == "{{ if":
+                            ifLayer += 1
+                        elif text[forPointer:forPointer+12] == "{{ end if }}":
+                            ifLayer -= 1
+                        if forPointer >= length:
+                            break
+                        forPointer += 1
+                    # Get code block content 
+                    codeBlock = text[startPointer+1:forPointer]
+
+                    # Begin check if
+                    checkStart = operation["checkStart"]
+                    checkCommand = operation["checkCommand"]
+                    checkEnd = operation["checkEnd"]
+                    # Check the result
+                    def getCheck():
+                        if checkCommand == "==":    
+                            return (checkStart == checkEnd)
+                        elif checkCommand == ">=":
+                            return (float(checkStart) >= float(checkEnd))
+                        elif checkCommand == "<=":
+                            return (float(checkStart) <= float(checkEnd))
+                        elif checkCommand == ">":
+                            return (float(checkStart) > float(checkEnd))
+                        elif checkCommand == "<":
+                            return (float(checkStart) < float(checkEnd))
+                        elif checkCommand == "!=":
+                            return (float(checkStart) != float(checkEnd))
+                        else:
+                            return False
+                    checkResult = getCheck()
+                    
+                    if checkResult:
+                        # Do
+                        temp = jParser(codeBlock + " ", self.items)
+                        output += temp.parse()
+
+                    # Adjust global offset
+                    pointer = forPointer + 11
 
                 # Command default
                 elif command == "error":
@@ -112,11 +161,21 @@ class jParser(object):
                 result["step"] = 1
             return result
 
-            
-
         # Case if
         elif data[0] == "if":
-            pass
+            result["command"] = "if"
+            if data[1][0] == "$":
+                result["checkStart"] = str(self.items.get(data[1].replace("$", "")))
+            else:
+                result["checkStart"] = str(data[1])
+            
+            result["checkCommand"] = str(data[2])
+
+            if data[3][0] == "$":
+                result["checkEnd"] = str(self.items.get(data[3].replace("$", "")))
+            else:
+                result["checkEnd"] = str(data[3])
+            return result
 
         # Case common ( All data are printed as value ).
         elif data[0][0] == "$":
